@@ -33,9 +33,9 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
 
   bool get _isPaused => _playerState == PlayerState.paused;
 
-  String get _durationText => _duration?.toString().split('.').first ?? '';
+  // String get _durationText => _duration?.toString().split('.').first ?? '';
 
-  String get _positionText => _position?.toString().split('.').first ?? '';
+  // String get _positionText => _position?.toString().split('.').first ?? '';
 
   AudioPlayer get player => widget.player;
 
@@ -89,55 +89,55 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
+          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            IconButton(
-              key: const Key('play_button'),
-              onPressed: _isPlaying ? null : _play,
-              iconSize: 48.0,
-              icon: const Icon(Icons.play_arrow),
-              color: color,
-            ),
-            IconButton(
-              key: const Key('pause_button'),
-              onPressed: _isPlaying ? _pause : null,
-              iconSize: 48.0,
-              icon: const Icon(Icons.pause),
-              color: color,
-            ),
-            IconButton(
-              key: const Key('stop_button'),
-              onPressed: _isPlaying || _isPaused ? _stop : null,
-              iconSize: 48.0,
-              icon: const Icon(Icons.stop),
-              color: color,
+            if (!_isPlaying)
+              IconButton(
+                key: const Key('play_button'),
+                onPressed: _isPlaying ? null : _play,
+                iconSize: 48.0,
+                icon: const Icon(Icons.play_arrow),
+                color: color,
+              ),
+            if (_isPlaying)
+              IconButton(
+                key: const Key('pause_button'),
+                onPressed: _isPlaying ? _pause : null,
+                iconSize: 48.0,
+                icon: const Icon(Icons.pause),
+                color: color,
+              ),
+            Expanded(
+              child: Slider(
+                activeColor: Colors.blue.shade200,
+                inactiveColor: Colors.grey.shade400,
+                onChanged: (value) {
+                  final duration = _duration;
+                  if (duration == null) {
+                    return;
+                  }
+                  final position = value * duration.inMilliseconds;
+                  player.seek(Duration(milliseconds: position.round()));
+                },
+                value: (_position != null &&
+                        _duration != null &&
+                        _position!.inMilliseconds > 0 &&
+                        _position!.inMilliseconds < _duration!.inMilliseconds)
+                    ? _position!.inMilliseconds / _duration!.inMilliseconds
+                    : 0.0,
+              ),
             ),
           ],
         ),
-        Slider(
-          onChanged: (value) {
-            final duration = _duration;
-            if (duration == null) {
-              return;
-            }
-            final position = value * duration.inMilliseconds;
-            player.seek(Duration(milliseconds: position.round()));
-          },
-          value: (_position != null &&
-                  _duration != null &&
-                  _position!.inMilliseconds > 0 &&
-                  _position!.inMilliseconds < _duration!.inMilliseconds)
-              ? _position!.inMilliseconds / _duration!.inMilliseconds
-              : 0.0,
-        ),
-        Text(
-          _position != null
-              ? '$_positionText / $_durationText'
-              : _duration != null
-                  ? _durationText
-                  : '',
-          style: const TextStyle(fontSize: 16.0),
-        ),
+        // Text(
+        //   _position != null
+        //       ? '$_positionText / $_durationText'
+        //       : _duration != null
+        //           ? _durationText
+        //           : '',
+        //   style: const TextStyle(fontSize: 16.0),
+        // ),
       ],
     );
   }

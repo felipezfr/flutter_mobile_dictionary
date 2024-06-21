@@ -69,6 +69,21 @@ class _HomePageState extends State<HomePage> {
       }
     });
 
+    final String titleLabel;
+    switch (page) {
+      case Page.wordList:
+        titleLabel = 'Word list';
+        break;
+      case Page.history:
+        titleLabel = 'History list';
+
+        break;
+      case Page.favoriteWordList:
+        titleLabel = 'Favorites list';
+
+        break;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Home'),
@@ -83,21 +98,27 @@ class _HomePageState extends State<HomePage> {
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    page = Page.wordList;
+                    setState(() {
+                      page = Page.wordList;
+                    });
                     controller.getWordList();
                   },
                   child: const Text('Word List'),
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    page = Page.history;
+                    setState(() {
+                      page = Page.history;
+                    });
                     controller.getHistoryWordList();
                   },
                   child: const Text('History'),
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    page = Page.favoriteWordList;
+                    setState(() {
+                      page = Page.favoriteWordList;
+                    });
                     controller.getFavoriteWordList();
                   },
                   child: const Text('Favorites'),
@@ -105,11 +126,11 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
             const SizedBox(height: 10),
-            const Align(
+            Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Word list',
-                style: TextStyle(
+                titleLabel,
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),

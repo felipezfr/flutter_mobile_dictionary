@@ -105,6 +105,7 @@ class _WordDetailPageState extends State<WordDetailPage> {
                             ],
                           ),
                         ),
+                        const SizedBox(height: 20),
                         Builder(
                           builder: (context) {
                             String? audioSource;
@@ -117,7 +118,9 @@ class _WordDetailPageState extends State<WordDetailPage> {
                               return AudioPlayerWidget(
                                   player: player, url: audioSource!);
                             }
-                            return const Text('No audio data');
+                            return const Text(
+                              'No audio data',
+                            );
                           },
                         ),
                         const SizedBox(height: 16),
@@ -132,11 +135,17 @@ class _WordDetailPageState extends State<WordDetailPage> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: state.data.meanings!.first.definitions!
-                                  .map((e) => Text(e.definition ?? ''))
-                                  .toList(),
+                            ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: state.data.meanings!.first.definitions
+                                      ?.length ??
+                                  0,
+                              itemBuilder: (context, index) {
+                                final definition = state.data.meanings!.first
+                                    .definitions?[index].definition;
+
+                                return Text(definition ?? '');
+                              },
                             ),
                           ],
                         ),
