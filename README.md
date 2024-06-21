@@ -66,7 +66,7 @@ flutter run
 - **Descrição Concisa**:
   - Mantenha o nome do arquivo descritivo e conciso, refletindo seu conteúdo ou funcionalidade.
 
-Toda pagina deve ter seu nome mais o sufixo '`_page.dar`t'.
+Toda pagina deve ter seu nome mais o sufixo '`_page.dart`'.
 
 ### Padrão para classes de interface
 
