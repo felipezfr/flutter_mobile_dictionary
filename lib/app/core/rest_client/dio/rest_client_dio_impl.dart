@@ -8,7 +8,7 @@ import 'dio_adapter.dart';
 class DioFactory {
   static Dio dio() {
     final baseOptions = BaseOptions(
-      baseUrl: '',
+      baseUrl: 'https://api.dictionaryapi.dev/api/v2/entries/en/',
       connectTimeout: const Duration(milliseconds: 5000),
       receiveTimeout: const Duration(milliseconds: 5000),
     );
