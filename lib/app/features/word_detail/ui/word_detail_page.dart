@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobile_dictionary/app/features/word_detail/interactor/entities/word_detail_entity.dart';
 import 'package:flutter_mobile_dictionary/app/features/word_detail/interactor/exceptions/word_detail_not_found_exception.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import '../../../core/alert/alerts.dart';
 import '../../../core/states/base_state.dart';
 import '../interactor/controller/word_detail_controller.dart';
+import 'widgets/audio_player_widget.dart';
 
 class WordDetailPage extends StatefulWidget {
   final String wordId;
@@ -21,6 +23,7 @@ class WordDetailPage extends StatefulWidget {
 
 class _WordDetailPageState extends State<WordDetailPage> {
   final controller = Modular.get<WordDetailController>();
+  late AudioPlayer player = AudioPlayer();
 
   bool isFavorited = false;
 
@@ -31,6 +34,9 @@ class _WordDetailPageState extends State<WordDetailPage> {
     controller.addHistory(widget.wordId);
     controller.addListener(listener);
     processFavorite(widget.wordId);
+
+    player = AudioPlayer();
+    player.setReleaseMode(ReleaseMode.stop);
   }
 
   void listener() {
@@ -98,6 +104,21 @@ class _WordDetailPageState extends State<WordDetailPage> {
                               ),
                             ],
                           ),
+                        ),
+                        Builder(
+                          builder: (context) {
+                            String? audioSource;
+                            state.data.phonetics?.forEach(
+                              (e) => e.audio!.isNotEmpty
+                                  ? audioSource = e.audio!
+                                  : '',
+                            );
+                            if (audioSource != null) {
+                              return AudioPlayerWidget(
+                                  player: player, url: audioSource!);
+                            }
+                            return const Text('No audio data');
+                          },
                         ),
                         const SizedBox(height: 16),
                         Column(
