@@ -1,4 +1,215 @@
-# Mobile Challenge 20240202
+
+<h1 align="center">Aplicativo Flutter para listar palavras em inglês</h1>
+
+## Descrição
+Aplicativo para listar palavras em inglês, baseado na Free Dictionary API. O objetivo é exibir termos em inglês, gerenciar as palavras visualizadas e reproduzir áudios.
+
+## Tecnologias Utilizadas
+ - Flutter
+ - Modular para gerenciamento de rotas e injeção de dependencias.
+ - Dio para requisições HTTP na API.
+ - Either para tratamento de erros.
+ - Gerenciamento de estado utilizando apenas ValueNotifier, de forma nativa, deixando o projeto desacoplado de pacotes para isso.
+ - Shared Preferences para armazenamento local.
+ - audioplayers para reprodução de audios.
+
+## Arquitetura
+
+A arquitetura escolhida foi a [MiniCore Arch](https://github.com/Flutterando/minicore?tab=readme-ov-file), inspirada na Clean Architecture, sua proposta é desacoplar as camadas mais externas e preservar as regras de Negócio.
+
+![MiniCore Arch](https://raw.githubusercontent.com/Flutterando/minicore/main/imgs/image2.png)
+
+
+## Como executar o projeto
+
+- Certifique-se de que sua versão do dart seja >= 3.4.3
+
+- Certifique-se de que sua versão do flutter seja >= 3.22.2
+
+- Para executar o seu projeto você deve clonar o projeto
+
+```dart
+git clone https://github.com/felipezfr/flutter_mobile_dictionary
+```
+
+```sh
+cd flutter_mobile_dictionary/
+```
+
+#### Após instalado
+
+- Execute o app
+
+```sh
+
+# dependencias
+flutter pub get
+
+# executando
+flutter run
+```
+
+
+## Tutoriais e Recursos
+
+### Nomenclatura
+
+- **Diretórios e Arquivos**:
+  - **Classes**: PascalCase
+  - **Variaveis**: Funções e métodos: camelCase
+  - **Interfaces**: Começam com um `I`, por ex. `IRepository`
+  - **Implementação**: Termina com `Impl`, por ex. `RepositoryImpl`
+- **Snake Case**:
+  - Use o estilo snake_case para nomes de arquivos.
+  - Todas as letras devem ser minúsculas.
+  - Palavras separadas por sublinhado.
+- **Descrição Concisa**:
+  - Mantenha o nome do arquivo descritivo e conciso, refletindo seu conteúdo ou funcionalidade.
+
+Toda pagina deve ter seu nome mais o sufixo '`_page.dar`t'.
+
+### Padrão para classes de interface
+
+```dart
+//good
+abstract interface class IUser {}
+
+//bad
+abstract interface class InterfaceUser {}
+```
+
+### Padrão para classes de implementação de interface
+
+```dart
+//good
+class UserImpl implements IUser {}
+
+//bad
+class UserImplements implements IUser {}
+```
+
+### Padrão para classes de entity
+
+#### definição: entity vai replicar o que a tela precisa
+
+```dart
+//good
+class UserEntity {}
+
+//bad
+class User {}
+```
+
+### State Pattern
+
+- **Flutter State Pattern**:
+  [Aprenda State Pattern](https://blog.flutterando.com.br/entendendo-state-pattern-flutter-b0318bab77c3)
+
+```dart
+sealed class BasetState {}
+
+class InitialState implements BasetState {}
+
+class LoadingState implements BasetState {}
+
+class SuccessState<R> implements BasetState {
+  const SuccessState({
+    required this.data,
+  });
+
+  final R data;
+}
+
+class ErrorState<T> implements BasetState {
+  const ErrorState({
+    required this.exception,
+  });
+
+  final T exception;
+}
+```
+
+- **Exemplo de uso do State Pattern**
+
+```dart
+class LoginControllerImpl extends BaseController {
+  final IAuthRepository _repository;
+
+  LoginControllerImpl({
+    required this.repository,
+  }) : super(InitialState());
+
+  Future<void> login({
+    required String email,
+    required String password,
+  }) async {
+
+    _state.value = LoadingState();
+
+    final credentials = Credentials(
+      email: email.trim().toLowerCase(),
+      password: password.trim(),
+    );
+
+    final result = await _repository.login(credentials);
+
+    final newState = result.fold(
+      (error) => ErrorState(exception: error),
+      (success) => SuccessState(data: success),
+    );
+
+    // set state
+    update(newState);
+  }
+}
+```
+
+### Princípio da inversão de dependências (DIP)
+
+- É um dos cinco princípios SOLID da programação orientada a objetos. Ele estabelece que:
+  - Módulos de alto nível não devem depender de módulos de baixo nível. Ambos devem depender de abstrações.
+  - Abstrações não devem depender de detalhes. Detalhes devem depender de abstrações.
+
+*Em termos mais simples, o DIP sugere que os módulos de alto nível devem depender de abstrações, não de implementações concretas. Isso permite que você escreva código que seja mais flexível e fácil de manter, pois os módulos de alto nível não estão vinculados a detalhes de implementação específicos dos módulos de baixo nível*.
+
+- **Para aplicar o DIP em um projeto, você precisa seguir algumas práticas**:
+
+  - **Definir abstrações claras**: Identifique as interfaces ou classes abstratas que descrevem os comportamentos que os módulos de alto nível precisam. Essas abstrações devem ser independentes de qualquer implementação concreta.
+  - **Injetar dependências**: Em vez de instanciar objetos diretamente dentro de outros objetos, injete as dependências por meio de construtores, métodos ou propriedades. Isso permite que as implementações concretas sejam substituídas por outras implementações compatíveis sem alterar o código dos módulos de alto nível.
+  - **Seguir o Princípio da Inversão de Controle (IoC)**: No DIP, o controle é invertido para que as implementações concretas dependam das abstrações. Isso é frequentemente alcançado por meio de um contêiner de injeção de dependência que gerencia a criação e resolução de dependências.
+  - **Testar unidades isoladas**: Ao usar abstrações e injetar dependências, você pode escrever testes de unidade mais facilmente, substituindo as implementações reais por mocks ou stubs durante os testes.
+
+*Ao seguir essas práticas, você pode criar um código mais flexível, modular e fácil de manter, alinhado com os princípios do DIP*.
+
+```dart
+  final IAuthRepository _repository;
+
+  LoginControllerImpl({
+    required IAuthRepository repository,
+  }) : _repository = repository;
+```
+
+### Manipulação de Erros e Resultados
+
+- Ao trabalhar com operações que podem retornar resultados ou erros, podemmos usar o typedef `Output<T>` para representar a saída dessas operações. Este typedef nos permite encapsular tanto o sucesso quanto o fracasso em um único tipo usando `Either`.
+  - Definição de um typedef para representar a saída de uma operação, onde o tipo de dado retornado pode ser um sucesso (T) ou um erro `(BaseException)`.
+  - Este typedef é parametrizado com um tipo genérico T, que representa o tipo de dado retornado em caso de sucesso.
+  - Exemplo de uso: `Output<User>` representa a saída de uma operação que retorna um objeto do tipo User em caso de sucesso, ou uma exceção do tipo `BaseException` em caso de erro.
+
+```dart
+typedef Output<T> = Either<BaseException, T>;
+```
+
+**Exemplo de uso do `Output`**.
+
+```dart
+abstract class IAuthRepository {
+  Future<Output<void>> login(Credentials credential);
+}
+```
+
+
+# Descrição do desafio
 
 ## Introdução
 
